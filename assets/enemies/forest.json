@@ -1,0 +1,13 @@
+{
+
+    "Slime": {
+        "char": "s",
+        "color":"#5db83e"
+    },
+
+    "Wolf":{
+        "char": "w",
+        "color":"#647573"
+    }
+
+}

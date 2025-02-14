@@ -42,13 +42,4 @@ fn setup(
         Transform::from_xyz(0.0,CAM_HEIGHT,0.0),
         MainCamera
     ));
-
-    commands.spawn((
-        Text2d::new("@"),
-        TextFont{
-            font_size:20.0,
-            ..default()
-        },
-        Transform::from_xyz(0., 0., 0.),
-    ));
 }
