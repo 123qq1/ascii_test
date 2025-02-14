@@ -15,13 +15,25 @@ pub struct Char;
 
 #[derive(Resource)]
 pub struct EnemyDict{
-    forest: HashMap<String,Enemy>,
+    forest: HashMap<String,EnemyData>,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct Enemy{
+#[derive(Resource)]
+pub struct LayoutDict{
+    test: Vec<LayoutData>,
+}
+
+#[derive(Deserialize)]
+pub struct EnemyData{
     char: String,
     color: String,
+}
+
+#[derive(Deserialize)]
+pub struct LayoutData{
+    id: String,
+    x:i32,
+    y:i32,
 }
 
 impl Plugin for CharPlugin{
@@ -32,18 +44,11 @@ impl Plugin for CharPlugin{
 
 fn test_chars(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
 ){
-    let v = vec![12.,22.,32.,42.,52.,62.];
-    let v2 = v.clone();
 
-    for x in &v {
-        for y in &v2 {
-            add_char(&mut commands, "@", *x, *y);
-        }
-    }
 
     load_enemies(&mut commands);
+    load_layouts(&mut commands);
 }
 
 fn load_enemies(
@@ -51,15 +56,28 @@ fn load_enemies(
 ){
 
     let file = File::open(TEST_ENEMIES_PATH).unwrap();
-    let e : HashMap<String,Enemy> = serde_json::from_reader(file).unwrap();
-    commands.insert_resource(EnemyDict{forest:e});
+    let forest : HashMap<String,EnemyData> = serde_json::from_reader(file).unwrap();
+    commands.insert_resource(EnemyDict{forest});
+}
+
+fn load_layouts(
+    commands: &mut Commands,
+){
+
+    let file = File::open(TEST_LAYOUT_PATH).unwrap();
+    let test : Vec<LayoutData> = serde_json::from_reader(file).unwrap();
+    commands.insert_resource(LayoutDict{test});
 }
 
 
-pub fn add_char(commands: &mut Commands ,_text: &'static str,x: f32,y: f32){
+pub fn add_char(commands: &mut Commands, text: &'static str, x: f32, y: f32, color: String){
+
+    let rgb_vec: Vec<u8> = color.split(", ").map(|str| str.parse::<u8>().unwrap()).collect();
+
     commands.spawn((
         Char,
-        Text2d::new(_text),
+        TextColor(Color::srgb_u8(rgb_vec[0],rgb_vec[1],rgb_vec[2])),
+        Text2d::new(text),
         TextFont{
             font_size:CHAR_SIZE,
             ..default()

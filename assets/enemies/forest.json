@@ -2,12 +2,12 @@
 
     "Slime": {
         "char": "s",
-        "color":"#5db83e"
+        "color":"93, 184, 62"
     },
 
     "Wolf":{
         "char": "w",
-        "color":"#647573"
+        "color":"100, 117, 115"
     }
 
 }
