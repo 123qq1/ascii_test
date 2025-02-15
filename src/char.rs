@@ -1,11 +1,7 @@
-use std::{collections::HashMap, env::current_dir, fs::File};
 
 use bevy::prelude::*;
-use serde::Deserialize;
 
 const CHAR_SIZE : f32 = 14.0; 
-const TEST_ENEMIES_PATH : &str = "./assets/enemies/forest.json";
-const TEST_LAYOUT_PATH : &str = "./assets/layout/test_layout.json";
 
 pub struct CharPlugin;
 
@@ -13,75 +9,56 @@ pub struct CharPlugin;
 #[require(Text2d)]
 pub struct Char;
 
-#[derive(Resource)]
-pub struct EnemyDict{
-    forest: HashMap<String,EnemyData>,
+#[derive(Event)]
+pub struct AddChar
+{
+    text: String,
+    x: f32, 
+    y: f32, 
+    color: String
 }
 
-#[derive(Resource)]
-pub struct LayoutDict{
-    test: Vec<LayoutData>,
-}
-
-#[derive(Deserialize)]
-pub struct EnemyData{
-    char: String,
-    color: String,
-}
-
-#[derive(Deserialize)]
-pub struct LayoutData{
-    id: String,
-    x:i32,
-    y:i32,
-}
-
-impl Plugin for CharPlugin{
-    fn build(&self, app: &mut App){
-        app.add_systems(Startup, test_chars);
+impl AddChar{
+    pub fn new(text:String, color: String, x_i: i32, y_i: i32) -> AddChar{
+        AddChar{
+            text,
+            color,
+            x: (x_i as f32) * CHAR_SIZE,
+            y: (y_i as f32) * CHAR_SIZE,
+        }
     }
 }
 
-fn test_chars(
-    mut commands: Commands,
-){
 
-
-    load_enemies(&mut commands);
-    load_layouts(&mut commands);
-}
-
-fn load_enemies(
-    commands: &mut Commands, 
-){
-
-    let file = File::open(TEST_ENEMIES_PATH).unwrap();
-    let forest : HashMap<String,EnemyData> = serde_json::from_reader(file).unwrap();
-    commands.insert_resource(EnemyDict{forest});
-}
-
-fn load_layouts(
-    commands: &mut Commands,
-){
-
-    let file = File::open(TEST_LAYOUT_PATH).unwrap();
-    let test : Vec<LayoutData> = serde_json::from_reader(file).unwrap();
-    commands.insert_resource(LayoutDict{test});
+impl Plugin for CharPlugin{
+    fn build(&self, app: &mut App){
+        app.add_event::<AddChar>();
+        app.add_systems(Update, on_add_char.run_if(on_event::<AddChar>));
+    }
 }
 
 
-pub fn add_char(commands: &mut Commands, text: &'static str, x: f32, y: f32, color: String){
 
-    let rgb_vec: Vec<u8> = color.split(", ").map(|str| str.parse::<u8>().unwrap()).collect();
 
-    commands.spawn((
-        Char,
-        TextColor(Color::srgb_u8(rgb_vec[0],rgb_vec[1],rgb_vec[2])),
-        Text2d::new(text),
-        TextFont{
-            font_size:CHAR_SIZE,
-            ..default()
-        },
-        Transform::from_xyz(x, y, 0.0),
-    ));
+pub fn on_add_char(
+    mut commands: Commands, 
+    mut ev_add_char: EventReader<AddChar>
+){
+    for ev in ev_add_char.read() {
+        let x = ev.x;
+        let y = ev.y;
+
+        let rgb_vec: Vec<u8> = ev.color.split(", ").map(|str| str.parse::<u8>().unwrap()).collect();
+    
+        commands.spawn((
+            Char,
+            TextColor(Color::srgb_u8(rgb_vec[0],rgb_vec[1],rgb_vec[2])),
+            Text2d::new(ev.text.clone()),
+            TextFont{
+                font_size:CHAR_SIZE,
+                ..default()
+            },
+            Transform::from_xyz(x, y, 0.0),
+        ));
+    }
 }

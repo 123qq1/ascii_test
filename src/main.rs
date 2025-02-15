@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 mod char;
+mod enemy;
 
 const CAM_SCALE : f32 = 1.2;
 const CAM_HEIGHT : f32 = -150.0;
@@ -18,7 +19,10 @@ fn main() {
         ..Default::default()
     }))
 
+    .insert_resource(ClearColor(Color::BLACK))
+
     .add_plugins(char::CharPlugin)
+    .add_plugins(enemy::EnemyPlugin)
 
     .add_systems(Startup, setup)
 
